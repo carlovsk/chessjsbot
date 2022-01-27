@@ -19,6 +19,7 @@
     "@serverless-stack/cli": "0.60.1",
     "@serverless-stack/resources": "0.60.1",
     "axios": "0.25.0",
+    "chess.js": "^0.12.0",
     "debug": "^4.3.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.1"
