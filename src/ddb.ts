@@ -1,5 +1,4 @@
 import { debug } from './core'
-import { DdbItem } from './types'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { DynamoDBClient, PutItemCommand, BatchWriteItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb'
 

@@ -29,10 +29,10 @@ const getClient = async () => axios.create({
   }
 })
 
-export const sendMessage = async (text: string) => {
+export const sendMessage = async (text: string, chatId: string) => {
   const client = await getClient()
   const { data } = await client.post('sendMessage', {
-    chat_id: await secrets.telegramChatId(),
+    chat_id: chatId,
     parse_mode: 'Markdown',
     text
   })
