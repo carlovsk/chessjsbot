@@ -9,7 +9,7 @@ const choseRandomMove = (moves: string[]) => moves[Math.floor(Math.random() * mo
 
 const getOverReason = (fen: string) => {
   const chess = new Chess(fen)
-  const winner = chess.turn() === 'w' ? 'black' : 'white'
+  const winner = chess.turn() === 'w' ? 'Black' : 'White'
 
   //  > Checkmate
   if (chess.in_checkmate()) {
@@ -114,7 +114,7 @@ export default async (payload): Promise<void> => {
 
   if (game.game_over()) {
     const { reason, winner } = getOverReason(game.fen())
-    await sendMessage(`${reason}\nThe winnes is: **${winner.toUpperCase()}**`, id)
+    await sendMessage(`${reason}\nThe winner is: **${winner}**`, id)
     return
   }
 
@@ -140,7 +140,7 @@ export default async (payload): Promise<void> => {
 
   if (game.game_over()) {
     const { reason, winner } = getOverReason(game.fen())
-    await sendMessage(`${reason}\nThe winner is: **${winner.toUpperCase()}**`, id)
+    await sendMessage(`${reason}\nThe winner is: **${winner}**`, id)
     return
   }
 }
