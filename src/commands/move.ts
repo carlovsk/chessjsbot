@@ -1,10 +1,10 @@
-import { Chess } from 'chess.js'
-import { PutItem, Query } from "../ddb"
+import { Chess, ChessInstance } from 'chess.js'
+import { PutItem, Query, DeleteItem, buildKeys, gameStatus } from "../ddb"
 import { sendMessage } from "../services"
-import { getCommandAndText } from "../utils"
+import { buildBoardMessage, getCommandAndText } from "../utils"
 import { debug } from "../core"
 
-const buildBoardMessage = (board: string) => `\`\`\`js\n${board}\n\`\`\``
+
 const choseRandomMove = (moves: string[]) => moves[Math.floor(Math.random() * moves.length)]
 
 const getOverReason = (fen: string) => {
@@ -41,11 +41,31 @@ const getOverReason = (fen: string) => {
   }
 }
 
+const finishGame = async (game: ChessInstance, gameId: string, playerId: string) => {
+  const { winner, reason } = getOverReason(game.fen())
+  await DeleteItem({ ...buildKeys.game({ playerId, gameId }) })
+  await PutItem({
+    ...buildKeys.game({ playerId, status: gameStatus.finished, gameId }),
+    gameId,
+    board: game.fen(),
+    pgn: game.pgn(),
+    winner,
+    reason
+  })
+
+  await sendMessage(`${reason}\nThe winner is: **${winner}**`, playerId)
+}
+
 const messages = {
   noMove: 'Please, type in a valid move like `/move e6`.',
   invalidMove: (move: string) => `The move \`${move}\` is not allowed.\nTry the command \`/availablemoves\` to check on what you could do.`,
   noGameRunning: 'There is no game running. You can start a new one with `/newgamebot`.',
-  board: (b: string, moveNumber: number, move: string) => `${moveNumber}. ${move}\n${buildBoardMessage(b)}`,
+  board: (fen: string, moveNumber: number, move: string) => {
+    const board = new Chess(fen)
+    console.log(board.turn())
+    const player = board.turn() === 'w' ? 'Black' : 'White'
+    return `Move ${moveNumber}: \`${move}\` (${player})\n\n${buildBoardMessage(board.ascii())}`
+  },
   playerCheckmate: 'Checkmate!\nYou won the game. Congrats 🎉'
 }
 
@@ -53,7 +73,7 @@ export default async (payload): Promise<void> => {
   const { id } = payload.message.chat
 
   // Query if user has a game running
-  const [isGameRunning] = await Query({ pk: 'game', sk: `${id}-` })
+  const [isGameRunning] = await Query({ ...buildKeys.game({ playerId: id }) })
   //   If not, return validation message
   if (!isGameRunning) {
     await sendMessage(messages.noGameRunning, id)
@@ -105,18 +125,11 @@ export default async (payload): Promise<void> => {
     board: game.fen()
   })
   // Send message
-  await sendMessage(messages.board(game.ascii(), qtdMoves + 1, move), id)
+  await sendMessage(messages.board(game.fen(), qtdMoves + 1, move), id)
 
   // Check if bot is in:
-  if (game.in_check()) {
-    await sendMessage('Check!', id)
-  }
-
-  if (game.game_over()) {
-    const { reason, winner } = getOverReason(game.fen())
-    await sendMessage(`${reason}\nThe winner is: **${winner}**`, id)
-    return
-  }
+  if (game.game_over()) return await finishGame(game, gameId, id)
+  if (game.in_check()) await sendMessage('Check!', id)
 
   // Do move
   const botMove = choseRandomMove(game.moves())
@@ -132,15 +145,8 @@ export default async (payload): Promise<void> => {
     board: game.fen()
   })
   // Send message
-  await sendMessage(messages.board(game.ascii(), qtdMoves + 2, botMove), id)
+  await sendMessage(messages.board(game.fen(), qtdMoves + 2, botMove), id)
 
-  if (game.in_check()) {
-    await sendMessage('Check!', id)
-  }
-
-  if (game.game_over()) {
-    const { reason, winner } = getOverReason(game.fen())
-    await sendMessage(`${reason}\nThe winner is: **${winner}**`, id)
-    return
-  }
+  if (game.game_over()) return await finishGame(game, gameId, id)
+  if (game.in_check()) await sendMessage('Check!', id)
 }

@@ -17,4 +17,8 @@ export const getCommandAndText = (txt: string) => {
   }
 }
 
-export const buildBoardMessage = (board: string) => `\`\`\`js\n${board}\n\`\`\``
+function replaceAll(target, search, replacement) {
+  return target.split(search).join(replacement)
+}
+
+export const buildBoardMessage = (board: string) => `\`\`\`js\n${replaceAll(board, '.', '•')}\n\`\`\``
