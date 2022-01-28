@@ -8,10 +8,7 @@ export default async (payload): Promise<void> => {
   const player = payload.message.from.first_name
 
   // Verify if a game is already running
-  const [isGameRunning] = await Query({
-    pk: 'game',
-    sk: `${id}-`
-  })
+  const [isGameRunning] = await Query({...buildKeys.game({ playerId: id })})
   if (isGameRunning) {
     await sendMessage('You already have a game running.', id)
     return
@@ -25,7 +22,7 @@ export default async (payload): Promise<void> => {
   const fen = game.fen()
 
   // store game
-  await PutItem({ ...buildKeys.game(id, gameId), gameId, board: fen })
+  await PutItem({ ...buildKeys.game({ playerId: id, gameId }), gameId, board: fen })
 
   // store players
   await PutItem({ ...buildKeys.player(id, gameId), gameId, player, playingAs: 'whites' })

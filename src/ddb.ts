@@ -1,6 +1,6 @@
 import { debug } from './core'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
-import { DynamoDBClient, PutItemCommand, BatchWriteItemCommand, QueryCommand } from '@aws-sdk/client-dynamodb'
+import { DynamoDBClient, PutItemCommand, BatchWriteItemCommand, QueryCommand, DeleteItemCommand } from '@aws-sdk/client-dynamodb'
 
 const client = new DynamoDBClient({})
 const TABLE_NAME = process.env.TABLE_NAME
@@ -26,6 +26,15 @@ export const PutItem = async (item: DdbItem) => {
   const response = await client.send(new PutItemCommand({
     TableName: TABLE_NAME,
     Item: marshall(item)
+  }))
+  return response
+}
+
+export const DeleteItem = async ({ pk, sk }: DdbItem) => {
+  debug('ddb:DeleteItem')('pk %o sk %o ', pk, sk)
+  const response = await client.send(new DeleteItemCommand({
+    TableName: TABLE_NAME,
+    Key: marshall({ pk, sk })
   }))
   return response
 }
@@ -69,11 +78,20 @@ export const gameStatus = {
   finished: 'finished'
 }
 
+interface GameKeysParams {
+  playerId: string
+  gameId?: string
+  status?: string
+}
 export const buildKeys = {
-  game: (playerId: string, gameId: string, status = gameStatus.running) => ({
-    pk: 'game',
-    sk: `${playerId}-${gameId}-${status}`
-  }),
+  game: ({ playerId, gameId, status = gameStatus.running }: GameKeysParams) => {
+    const keys = {
+      pk: 'game',
+      sk: `${playerId}-${status}`
+    }
+    if (gameId) keys.sk += `-${gameId}`
+    return keys
+  },
   player: (playerId: string, gameId: string) => ({
     pk: gameId,
     sk: `player-${playerId}`

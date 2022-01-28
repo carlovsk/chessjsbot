@@ -1,14 +1,11 @@
 import { Chess } from 'chess.js'
-import { Query } from "../ddb"
+import { Query, buildKeys } from "../ddb"
 import { sendMessage } from "../services"
 
 export default async (payload): Promise<void> => {
   const { id } = payload.message.chat
 
-  const [isGameRunning] = await Query({
-    pk: 'game',
-    sk: `${id}-`
-  })
+  const [isGameRunning] = await Query({ ...buildKeys.game({ playerId: id }) })
 
   if (!isGameRunning) {
     await sendMessage('There is no game running. You can start a new one with `/newgamebot`.', id)
@@ -17,6 +14,12 @@ export default async (payload): Promise<void> => {
 
   const allMoves = await Query({ pk: `${isGameRunning.gameId}`, sk: 'move-', attributes: ['sk'] })
   const qtdMoves = allMoves.length
+
+  if (qtdMoves === 0) {
+    const game = new Chess(isGameRunning.board)
+    const moves = game.moves().map(move => `\`${move}\``).join(', ')
+    return sendMessage(moves, id)
+  }
 
   const [{ board }] = await Query({ pk: `${isGameRunning.gameId}`, sk: `move-${qtdMoves}` })
 
