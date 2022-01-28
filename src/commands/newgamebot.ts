@@ -1,5 +1,6 @@
 import { Chess } from 'chess.js'
-import { startGame, Query, buildKeys } from "../ddb"
+import { startGame } from '../db/functions'
+import { gameRunningByPlayerId } from '../db/queries'
 import { sendMessage } from "../services"
 import { buildBoardMessage } from "../utils"
 
@@ -8,7 +9,7 @@ export default async (payload): Promise<void> => {
   const player = payload.message.from.first_name
 
   // Verify if a game is already running
-  const [isGameRunning] = await Query({ ...buildKeys.game({ playerId: id }) })
+  const isGameRunning = await gameRunningByPlayerId(id)
   if (isGameRunning) return sendMessage('You already have a game running.', id)
 
   await sendMessage(`Great! Starting the game...`, id)
