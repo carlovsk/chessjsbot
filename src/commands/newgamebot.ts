@@ -5,7 +5,7 @@ import { buildBoardMessage, makeId } from "../utils"
 
 export default async (payload): Promise<void> => {
   const { id } = payload.message.chat
-  const player = payload.message.from.username
+  const player = payload.message.from.first_name
 
   // Verify if a game is already running
   const [isGameRunning] = await Query({
