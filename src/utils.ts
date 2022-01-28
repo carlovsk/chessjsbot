@@ -1,8 +1,3 @@
-import isNil from 'lodash/isNil'
-import omitBy from 'lodash/omitBy'
-
-export const cleanObject = (object: object) => omitBy(object, isNil)
-
 export const makeId = (length = 6) => {
   let text = ''
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -11,3 +6,15 @@ export const makeId = (length = 6) => {
   }
   return text
 }
+
+export const getCommandAndText = (txt: string) => {
+  const [slashCommand, text] = txt.split(' ')
+  const [, command] = slashCommand.split('/')
+
+  return {
+    command,
+    text
+  }
+}
+
+export const buildBoardMessage = (board: string) => `\`\`\`js\n${board}\n\`\`\``
