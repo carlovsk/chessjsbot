@@ -1,4 +1,5 @@
 import { debug } from './core'
+import { makeId } from './utils'
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'
 import { DynamoDBClient, PutItemCommand, BatchWriteItemCommand, QueryCommand, DeleteItemCommand } from '@aws-sdk/client-dynamodb'
 
@@ -96,4 +97,20 @@ export const buildKeys = {
     pk: gameId,
     sk: `player-${playerId}`
   })
+}
+
+export const startGame = async ({ whitePlayer, blackPlayer, fen }: {
+  fen: string
+  whitePlayer: { name: string, id: string }
+  blackPlayer: { name: string, id: string }
+}) => {
+  const gameId = makeId()
+
+  // store game
+  await PutItem({ ...buildKeys.game({ playerId: whitePlayer.id, gameId }), gameId, board: fen })
+  await PutItem({ ...buildKeys.game({ playerId: blackPlayer.id, gameId }), gameId, board: fen })
+
+  // store players
+  await PutItem({ ...buildKeys.player(whitePlayer.id, gameId), gameId, player: whitePlayer.name, playingAs: 'white' })
+  await PutItem({ ...buildKeys.player(blackPlayer.id, gameId), gameId, player: blackPlayer.name, playingAs: 'black' })
 }

@@ -1,33 +1,27 @@
 import { Chess } from 'chess.js'
-import { PutItem, Query, buildKeys } from "../ddb"
+import { startGame, Query, buildKeys } from "../ddb"
 import { sendMessage } from "../services"
-import { buildBoardMessage, makeId } from "../utils"
+import { buildBoardMessage } from "../utils"
 
 export default async (payload): Promise<void> => {
   const { id } = payload.message.chat
   const player = payload.message.from.first_name
 
   // Verify if a game is already running
-  const [isGameRunning] = await Query({...buildKeys.game({ playerId: id })})
-  if (isGameRunning) {
-    await sendMessage('You already have a game running.', id)
-    return
-  }
+  const [isGameRunning] = await Query({ ...buildKeys.game({ playerId: id }) })
+  if (isGameRunning) return sendMessage('You already have a game running.', id)
 
   await sendMessage(`Great! Starting the game...`, id)
-  await sendMessage(`**${player}** (whites) vs. **Bot** (blacks)`, id)
+  await sendMessage(`**${player}** (white) vs. **Bot** (black)`, id)
 
   const game = new Chess()
-  const gameId = makeId()
-  const fen = game.fen()
 
-  // store game
-  await PutItem({ ...buildKeys.game({ playerId: id, gameId }), gameId, board: fen })
-
-  // store players
-  await PutItem({ ...buildKeys.player(id, gameId), gameId, player, playingAs: 'whites' })
-  await PutItem({ ...buildKeys.player('bot', gameId), gameId, player: 'bot', playingAs: 'blacks' })
+  await startGame({
+    fen: game.fen(),
+    whitePlayer: { name: player, id: id },
+    blackPlayer: { name: 'bot', id: 'bot' }
+  })
 
   await sendMessage(buildBoardMessage(game.ascii()), id)
-  await sendMessage('You start as whites :)', id)
+  await sendMessage('You start as white :)', id)
 }
