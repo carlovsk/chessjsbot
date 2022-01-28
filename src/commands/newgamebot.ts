@@ -1,5 +1,5 @@
 import { Chess } from 'chess.js'
-import { PutItem,Query } from "../ddb"
+import { PutItem, Query, buildKeys } from "../ddb"
 import { sendMessage } from "../services"
 import { buildBoardMessage, makeId } from "../utils"
 
@@ -25,12 +25,11 @@ export default async (payload): Promise<void> => {
   const fen = game.fen()
 
   // store game
-  await PutItem({ pk: 'game', sk: gameId, board: fen })
-  await PutItem({ pk: 'game', sk: `${id}-${gameId}`, gameId, board: fen })
+  await PutItem({ ...buildKeys.game(id, gameId), gameId, board: fen })
 
   // store players
-  await PutItem({ pk: `${gameId}`, sk: `player-${id}`, gameId, player })
-  await PutItem({ pk: `${gameId}`, sk: `player-bot`, gameId, player: 'bot' })
+  await PutItem({ ...buildKeys.player(id, gameId), gameId, player, playingAs: 'whites' })
+  await PutItem({ ...buildKeys.player('bot', gameId), gameId, player: 'bot', playingAs: 'blacks' })
 
   await sendMessage(buildBoardMessage(game.ascii()), id)
   await sendMessage('You start as whites :)', id)

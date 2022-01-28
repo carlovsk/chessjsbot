@@ -5,6 +5,9 @@ import { DynamoDBClient, PutItemCommand, BatchWriteItemCommand, QueryCommand } f
 const client = new DynamoDBClient({})
 const TABLE_NAME = process.env.TABLE_NAME
 
+// ///////////////////////////// //
+// Methods related to Ddb itself //
+// ///////////////////////////// //
 interface DdbItem {
   pk?: string
   sk?: string
@@ -18,10 +21,14 @@ interface QueryParams {
 }
 
 // Adding ddb services
-export const PutItem = (item: DdbItem) => client.send(new PutItemCommand({
-  TableName: TABLE_NAME,
-  Item: marshall(item)
-}))
+export const PutItem = async (item: DdbItem) => {
+  debug('ddb:PutItem')('pk %o sk %o ', item.pk, item.sk)
+  const response = await client.send(new PutItemCommand({
+    TableName: TABLE_NAME,
+    Item: marshall(item)
+  }))
+  return response
+}
 
 export const BatchWriteItems = (items: DdbItem[]) => client.send(new BatchWriteItemCommand({
   RequestItems: {
@@ -52,4 +59,23 @@ export const Query = async ({ pk, sk, attributes }: QueryParams): Promise<DdbIte
   debug('ddb:Query')('Items.length %o', Items.length)
 
   return Items.map(item => unmarshall(item))
+}
+
+// ///////////////////////////// //
+// Things related to app context //
+// ///////////////////////////// //
+export const gameStatus = {
+  running: 'running',
+  finished: 'finished'
+}
+
+export const buildKeys = {
+  game: (playerId: string, gameId: string, status = gameStatus.running) => ({
+    pk: 'game',
+    sk: `${playerId}-${gameId}-${status}`
+  }),
+  player: (playerId: string, gameId: string) => ({
+    pk: gameId,
+    sk: `player-${playerId}`
+  })
 }
