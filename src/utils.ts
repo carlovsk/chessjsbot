@@ -17,7 +17,7 @@ export const getCommandAndText = (txt: string) => {
   }
 }
 
-function replaceAll(target, search, replacement) {
+function replaceAll(target: string, search: string, replacement: string) {
   return target.split(search).join(replacement)
 }
 

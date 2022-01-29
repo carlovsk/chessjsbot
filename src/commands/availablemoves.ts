@@ -1,8 +1,9 @@
-import { Chess } from 'chess.js'
+import { Chess } from '../lib/chess'
+import { Payload } from '../types/payload'
 import { movesByGameId, gameRunningByPlayerId } from '../db/queries'
 import { sendMessage } from '../services'
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
 
   const isGameRunning = await gameRunningByPlayerId(id)
@@ -12,7 +13,7 @@ export default async (payload): Promise<void> => {
   const qtdMoves = allMoves.length
 
   const board = qtdMoves > 0 ? allMoves[qtdMoves - 1].board : isGameRunning.board
-  const game = new Chess(board)
+  const game = Chess(board)
   const moves = game.moves().join(', ')
 
   return sendMessage(moves, id)

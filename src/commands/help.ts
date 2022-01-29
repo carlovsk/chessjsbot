@@ -1,4 +1,5 @@
 import { sendMessage } from '../services'
+import { Payload } from '../types/payload'
 
 const message = `
 Hey!
@@ -12,7 +13,7 @@ This is the list of available commands:
   \`/availablemoves\` - list the available moves on a running game
 `
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
   await sendMessage(message, id)
 }

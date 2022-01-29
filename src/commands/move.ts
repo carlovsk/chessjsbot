@@ -1,24 +1,24 @@
-import { ChessInstance } from 'chess.js'
+import { ChessInstance } from '../types/chess'
 import { Chess } from '../lib/chess'
+import { Payload } from '../types/payload'
 import { sendMessage } from '../services'
-import { buildBoardMessage, getCommandAndText, choseRandomMove } from '../utils'
+import { buildBoardMessage, getCommandAndText } from '../utils'
 import { debug } from '../core'
 import { gameRunningByPlayerId, movesByGameId } from '../db/queries'
 import { storeMove, finishGame } from '../db/functions'
-import { makeBestMove } from '../chess-ai'
+import { makeBestMove } from '../lib/chess-ai'
 
-const getGameOverReason = (fen: string) => {
-  const chess = new Chess(fen)
-  const winner = chess.turn() === 'w' ? 'Black' : 'White'
+const getGameOverReason = (game: ChessInstance) => {
+  const winner = game.turn() === 'w' ? 'Black' : 'White'
 
-  if (chess.in_checkmate()) return { winner, reason: 'Checkmate!' }
-  if (chess.in_stalemate()) return { winner, reason: 'Stalemate!' }
-  if (chess.in_draw()) return { winner: 'draw', reason: 'Draw!' }
-  if (chess.in_threefold_repetition()) return { winner: 'draw', reason: 'Draw by repetition!' }
+  if (game.in_checkmate()) return { winner, reason: 'Checkmate!' }
+  if (game.in_stalemate()) return { winner: 'draw', reason: 'Stalemate!' }
+  if (game.in_threefold_repetition()) return { winner: 'draw', reason: 'Draw by repetition!' }
+  return { winner: 'draw', reason: 'Draw!' }
 }
 
 const endGame = async (game: ChessInstance, gameId: string, playerId: string) => {
-  const { winner, reason } = getGameOverReason(game.fen())
+  const { winner, reason } = getGameOverReason(game)
   await finishGame({ gameId, winner, reason, game, whitePlayer: { id: playerId }, blackPlayer: { id: 'bot' } })
   await sendMessage(`${reason}\nThe winner is: **${winner}**`, playerId)
 }
@@ -33,7 +33,7 @@ const messages = {
   }
 }
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
 
   // Verify if a game is already running
@@ -49,7 +49,7 @@ export default async (payload): Promise<void> => {
   const allMoves = await movesByGameId(gameId)
   const qtdMoves = allMoves.length
 
-  const game = new Chess()
+  const game = Chess()
 
   if (qtdMoves > 0) {
     // Loading all the previous moves

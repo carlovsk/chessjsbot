@@ -1,6 +1,6 @@
-import { ChessInstance } from 'chess.js'
 import { makeId } from '../utils'
 import { User } from '../types/payload'
+import { ChessInstance } from '../types/chess'
 import { buildKeys, gameStatus } from './constants'
 import { PutItem, DeleteItem } from './dynamodb'
 

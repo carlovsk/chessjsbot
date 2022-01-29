@@ -1,4 +1,5 @@
 import { sendMessage } from '../services'
+import { Payload } from '../types/payload'
 
 const message = `
 Hi there!
@@ -12,7 +13,7 @@ You can find my creator on his [LinkedIn](https://www.linkedin.com/in/carlosdnba
 Have you found an issue? Please, report it [here](https://github.com/carlosdnba/chessjsbot/issues/new).
 `
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
   await sendMessage(message, id)
 }
