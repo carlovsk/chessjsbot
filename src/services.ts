@@ -34,6 +34,7 @@ export const sendMessage = async (text: string, chatId: string) => {
   const { data } = await client.post('sendMessage', {
     chat_id: chatId,
     parse_mode: 'Markdown',
+    disable_web_page_preview: true,
     text
   })
   return data

@@ -22,3 +22,5 @@ function replaceAll(target, search, replacement) {
 }
 
 export const buildBoardMessage = (board: string) => `\`\`\`js\n${replaceAll(board, '.', '•')}\n\`\`\``
+
+export const choseRandomMove = (moves: string[]) => moves[Math.floor(Math.random() * moves.length)]
