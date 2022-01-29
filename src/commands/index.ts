@@ -5,7 +5,7 @@ import readme from './readme'
 import newgamebot from './newgamebot'
 import availablemoves from './availablemoves'
 
-export default {
+export const commands: { [key: string]: any } = {
   start,
   help,
   readme,

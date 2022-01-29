@@ -1,5 +1,6 @@
 import { ChessInstance } from 'chess.js'
 import { makeId } from '../utils'
+import { User } from '../types/payload'
 import { buildKeys, gameStatus } from './constants'
 import { PutItem, DeleteItem } from './dynamodb'
 
@@ -29,12 +30,7 @@ export const storeMove = async ({ gameId, playerId, move, moveIdx, board }: {
   await PutItem({ ...buildKeys.move(gameId, moveIdx), gameId, moveIdx, move, player: playerId, board })
 }
 
-export const saveUser = async (user: {
-  id: string
-  first_name: string
-  last_name: string
-  username: string
-}) => {
+export const saveUser = async (user: User) => {
   await PutItem({
     pk: 'user',
     sk: `${user.id}`,
