@@ -1,6 +1,7 @@
+import { ChessInstance } from 'chess.js'
 import { makeId } from '../utils'
-import { buildKeys } from './constants'
-import { PutItem } from './dynamodb'
+import { buildKeys, gameStatus } from './constants'
+import { PutItem, DeleteItem } from './dynamodb'
 
 export const startGame = async ({ whitePlayer, blackPlayer, fen }: {
   fen: string
@@ -18,6 +19,16 @@ export const startGame = async ({ whitePlayer, blackPlayer, fen }: {
   await PutItem({ ...buildKeys.player(blackPlayer.id, gameId), gameId, player: blackPlayer.name, playingAs: 'black' })
 }
 
+export const storeMove = async ({ gameId, playerId, move, moveIdx, board }: {
+  gameId: string
+  playerId: string
+  move: string
+  moveIdx: number
+  board: string
+}) => {
+  await PutItem({ ...buildKeys.move(gameId, moveIdx), gameId, moveIdx, move, player: playerId, board })
+}
+
 export const saveUser = async (user: {
   id: string
   first_name: string
@@ -31,3 +42,33 @@ export const saveUser = async (user: {
     startedAt: new Date().toISOString()
   })
 }
+
+export const finishGame = async ({ whitePlayer, blackPlayer, gameId, winner, reason, game }: {
+  game: ChessInstance
+  whitePlayer: { id: string }
+  blackPlayer: { id: string }
+  gameId: string
+  winner: string
+  reason: string
+}) => {
+  const gameParams = {
+    gameId,
+    board: game.fen(),
+    pgn: game.pgn(),
+    winner,
+    reason
+  }
+
+  await DeleteItem({ ...buildKeys.game({ playerId: whitePlayer.id, gameId }) })
+  await DeleteItem({ ...buildKeys.game({ playerId: blackPlayer.id, gameId }) })
+
+  await PutItem({
+    ...buildKeys.game({ playerId: whitePlayer.id, status: gameStatus.finished, gameId }),
+    ...gameParams
+  })
+  await PutItem({
+    ...buildKeys.game({ playerId: blackPlayer.id, status: gameStatus.finished, gameId }),
+    ...gameParams
+  })
+}
+

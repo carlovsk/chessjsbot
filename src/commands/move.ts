@@ -1,58 +1,23 @@
 import { Chess, ChessInstance } from 'chess.js'
-import { PutItem, Query, DeleteItem, buildKeys, gameStatus } from "../ddb"
-import { sendMessage } from "../services"
-import { buildBoardMessage, getCommandAndText } from "../utils"
-import { debug } from "../core"
+import { sendMessage } from '../services'
+import { buildBoardMessage, getCommandAndText, choseRandomMove } from '../utils'
+import { debug } from '../core'
+import { gameRunningByPlayerId, movesByGameId } from '../db/queries'
+import { storeMove, finishGame } from '../db/functions'
 
-
-const choseRandomMove = (moves: string[]) => moves[Math.floor(Math.random() * moves.length)]
-
-const getOverReason = (fen: string) => {
+const getGameOverReason = (fen: string) => {
   const chess = new Chess(fen)
   const winner = chess.turn() === 'w' ? 'Black' : 'White'
 
-  //  > Checkmate
-  if (chess.in_checkmate()) {
-    return {
-      winner,
-      reason: 'Checkmate!'
-    }
-  }
-  //  > Stalemate
-  if (chess.in_stalemate()) {
-    return {
-      winner,
-      reason: 'Stalemate!'
-    }
-  }
-  //  > Draw - 50-move rule or insufficient material
-  if (chess.in_draw()) {
-    return {
-      winner: 'draw',
-      reason: 'Draw!'
-    }
-  }
-  //  > Draw by repetition
-  if (chess.in_threefold_repetition()) {
-    return {
-      winner: 'draw',
-      reason: 'Draw by repetition!'
-    }
-  }
+  if (chess.in_checkmate()) return { winner, reason: 'Checkmate!' }
+  if (chess.in_stalemate()) return { winner, reason: 'Stalemate!' }
+  if (chess.in_draw()) return { winner: 'draw', reason: 'Draw!' }
+  if (chess.in_threefold_repetition()) return { winner: 'draw', reason: 'Draw by repetition!' }
 }
 
-const finishGame = async (game: ChessInstance, gameId: string, playerId: string) => {
-  const { winner, reason } = getOverReason(game.fen())
-  await DeleteItem({ ...buildKeys.game({ playerId, gameId }) })
-  await PutItem({
-    ...buildKeys.game({ playerId, status: gameStatus.finished, gameId }),
-    gameId,
-    board: game.fen(),
-    pgn: game.pgn(),
-    winner,
-    reason
-  })
-
+const endGame = async (game: ChessInstance, gameId: string, playerId: string) => {
+  const { winner, reason } = getGameOverReason(game.fen())
+  await finishGame({ gameId, winner, reason, game, whitePlayer: { id: playerId }, blackPlayer: { id: 'bot' } })
   await sendMessage(`${reason}\nThe winner is: **${winner}**`, playerId)
 }
 
@@ -60,40 +25,25 @@ const messages = {
   noMove: 'Please, type in a valid move like `/move e6`.',
   invalidMove: (move: string) => `The move \`${move}\` is not allowed.\nTry the command \`/availablemoves\` to check on what you could do.`,
   noGameRunning: 'There is no game running. You can start a new one with `/newgamebot`.',
-  board: (fen: string, moveNumber: number, move: string) => {
-    const board = new Chess(fen)
-    console.log(board.turn())
-    const player = board.turn() === 'w' ? 'Black' : 'White'
-    return `Move ${moveNumber}: \`${move}\` (${player})\n\n${buildBoardMessage(board.ascii())}`
-  },
-  playerCheckmate: 'Checkmate!\nYou won the game. Congrats 🎉'
+  board: (game: ChessInstance, moveNumber: number, move: string) => {
+    const player = game.turn() === 'w' ? 'Black' : 'White'
+    return `Move ${moveNumber}: \`${move}\` (${player})\n\n${buildBoardMessage(game.ascii())}`
+  }
 }
 
 export default async (payload): Promise<void> => {
   const { id } = payload.message.chat
 
-  // Query if user has a game running
-  const [isGameRunning] = await Query({ ...buildKeys.game({ playerId: id }) })
-  //   If not, return validation message
-  if (!isGameRunning) {
-    await sendMessage(messages.noGameRunning, id)
-    return
-  }
+  // Verify if a game is already running
+  const isGameRunning = await gameRunningByPlayerId(id)
+  if (!isGameRunning) return sendMessage(messages.noGameRunning, id)
 
   const { gameId } = isGameRunning
   const { text: move } = getCommandAndText(payload.message.text)
-  // Check if move is given
-  //   If not, return validation message
-  if (!move) {
-    await sendMessage(messages.noMove, id)
-    return
-  }
 
-  const allMoves = await Query({
-    pk: `${isGameRunning.gameId}`,
-    sk: 'move-',
-    attributes: ['sk', 'board', 'move', 'moveIdx']
-  })
+  if (!move) return sendMessage(messages.noMove, id)
+
+  const allMoves = await movesByGameId(gameId)
   const qtdMoves = allMoves.length
 
   const game = new Chess()
@@ -105,48 +55,24 @@ export default async (payload): Promise<void> => {
   }
 
   // Check if move is valid
-  //   If not, return validation message
   if (!game.moves().includes(move)) {
     debug('commands:move')('move %o availableMoves %o', move, game.moves())
-    await sendMessage(messages.invalidMove(move), id)
-    return
+    return sendMessage(messages.invalidMove(move), id)
   }
 
-  // Do move
   game.move(move)
-  // Store move
-  await PutItem({
-    pk: `${gameId}`,
-    sk: `move-${qtdMoves + 1}`,
-    moveIdx: qtdMoves + 1,
-    move,
-    gameId,
-    player: id,
-    board: game.fen()
-  })
-  // Send message
-  await sendMessage(messages.board(game.fen(), qtdMoves + 1, move), id)
+  await storeMove({ gameId, playerId: id, move, moveIdx: qtdMoves + 1, board: game.fen() })
+  await sendMessage(messages.board(game, qtdMoves + 1, move), id)
 
-  // Check if bot is in:
-  if (game.game_over()) return await finishGame(game, gameId, id)
+  if (game.game_over()) return endGame(game, gameId, id)
   if (game.in_check()) await sendMessage('Check!', id)
 
-  // Do move
   const botMove = choseRandomMove(game.moves())
-  game.move(botMove)
-  // Store move
-  await PutItem({
-    pk: `${gameId}`,
-    moveIdx: qtdMoves + 2,
-    sk: `move-${qtdMoves + 2}`,
-    gameId,
-    move: botMove,
-    player: 'bot',
-    board: game.fen()
-  })
-  // Send message
-  await sendMessage(messages.board(game.fen(), qtdMoves + 2, botMove), id)
 
-  if (game.game_over()) return await finishGame(game, gameId, id)
+  game.move(botMove)
+  await storeMove({ gameId, playerId: 'bot', move: botMove, moveIdx: qtdMoves + 2, board: game.fen() })
+  await sendMessage(messages.board(game, qtdMoves + 2, botMove), id)
+
+  if (game.game_over()) return endGame(game, gameId, id)
   if (game.in_check()) await sendMessage('Check!', id)
 }

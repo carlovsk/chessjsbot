@@ -15,3 +15,12 @@ export const userById = async (userId: string) => {
   })
   return user
 }
+
+export const movesByGameId = async (gameId: string) => {
+  const moves = await Query({
+    pk: `${gameId}`,
+    sk: 'move-',
+    attributes: ['sk', 'board', 'move', 'moveIdx']
+  })
+  return moves
+}

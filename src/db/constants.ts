@@ -20,5 +20,9 @@ export const buildKeys = {
   player: (playerId: string, gameId: string) => ({
     pk: gameId,
     sk: `player-${playerId}`
+  }),
+  move: (gameId: string, moveIdx: number) => ({
+    pk: gameId,
+    sk: `move-${moveIdx}`
   })
 }
