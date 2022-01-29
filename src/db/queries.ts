@@ -24,3 +24,11 @@ export const movesByGameId = async (gameId: string) => {
   })
   return moves
 }
+
+export const moveByGameIdAndIndex = async (gameId: string, moveIdx: number) => {
+  const [move] = await Query({
+    pk: `${gameId}`,
+    sk: `move-${moveIdx}`
+  })
+  return move
+}
