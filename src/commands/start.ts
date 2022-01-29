@@ -1,6 +1,7 @@
 import { userById } from '../db/queries'
 import { saveUser } from '../db/functions'
 import { sendMessage } from '../services'
+import { Payload } from '../types/payload'
 
 const message = `
 Welcome!
@@ -13,7 +14,7 @@ You can also see the whole list of commands by running the command \`/help\`.
 Have fun!
 `
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
   await sendMessage(message, id)
 

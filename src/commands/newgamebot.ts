@@ -1,10 +1,11 @@
-import { Chess } from 'chess.js'
+import { Chess } from '../lib/chess'
 import { startGame } from '../db/functions'
 import { gameRunningByPlayerId } from '../db/queries'
 import { sendMessage } from "../services"
 import { buildBoardMessage } from "../utils"
+import { Payload } from '../types/payload'
 
-export default async (payload): Promise<void> => {
+export default async (payload: Payload): Promise<void> => {
   const { id } = payload.message.chat
   const player = payload.message.from.first_name
 
@@ -15,7 +16,7 @@ export default async (payload): Promise<void> => {
   await sendMessage(`Great! Starting the game...`, id)
   await sendMessage(`**${player}** (white) vs. **Bot** (black)`, id)
 
-  const game = new Chess()
+  const game = Chess()
 
   await startGame({
     fen: game.fen(),
