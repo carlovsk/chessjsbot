@@ -1,4 +1,4 @@
-import { setWebhook } from './services'
+import { setWebhook, sendMessage } from './services'
 import { debug } from './core'
 import { getCommandAndText } from './utils'
 import { commands } from './commands'
@@ -24,7 +24,8 @@ export const hooks = async (event: Event): Promise<void | Payload> => {
 
   if (commands[command]) {
     return await commands[command](payload)
+  } else {
+    const text = 'Sorry, I don\'t know this command. Try running `/help` to see the commands I know.'
+    return await sendMessage(text, payload.message.chat.id)
   }
-
-  return payload
 }
