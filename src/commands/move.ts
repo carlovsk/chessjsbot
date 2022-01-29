@@ -1,9 +1,11 @@
-import { Chess, ChessInstance } from 'chess.js'
+import { ChessInstance } from 'chess.js'
+import { Chess } from '../lib/chess'
 import { sendMessage } from '../services'
 import { buildBoardMessage, getCommandAndText, choseRandomMove } from '../utils'
 import { debug } from '../core'
 import { gameRunningByPlayerId, movesByGameId } from '../db/queries'
 import { storeMove, finishGame } from '../db/functions'
+import { makeBestMove } from '../chess-ai'
 
 const getGameOverReason = (fen: string) => {
   const chess = new Chess(fen)
@@ -38,6 +40,7 @@ export default async (payload): Promise<void> => {
   const isGameRunning = await gameRunningByPlayerId(id)
   if (!isGameRunning) return sendMessage(messages.noGameRunning, id)
 
+  // Player's turn
   const { gameId } = isGameRunning
   const { text: move } = getCommandAndText(payload.message.text)
 
@@ -67,7 +70,10 @@ export default async (payload): Promise<void> => {
   if (game.game_over()) return endGame(game, gameId, id)
   if (game.in_check()) await sendMessage('Check!', id)
 
-  const botMove = choseRandomMove(game.moves())
+  // Bot's turn
+  // const botMove = choseRandomMove(game.moves())
+  const { move: botMove } = makeBestMove({ game, previousSum: 0 })
+  console.log(botMove)
 
   game.move(botMove)
   await storeMove({ gameId, playerId: 'bot', move: botMove, moveIdx: qtdMoves + 2, board: game.fen() })
