@@ -217,6 +217,24 @@
     "@aws-sdk/util-utf8-browser" "^3.0.0"
     tslib "^1.11.1"
 
+"@aws-lambda-powertools/commons@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@aws-lambda-powertools/commons/-/commons-0.2.0.tgz#99dd6782ca62c13342981f6f87042f95b9743bf9"
+  integrity sha512-h0YItiAkJkTTbKBJxR2Xe5iQMjkyZq7eLPJe4Dpm4RaiwzXG2Ejwt1jt/QoDcaJoxqWPrUnWteNtQzpEB8u2qQ==
+  dependencies:
+    "@types/aws-lambda" "^8.10.72"
+
+"@aws-lambda-powertools/logger@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@aws-lambda-powertools/logger/-/logger-0.5.0.tgz#aa5cb1bacfcb0e8603c073bc7dfda5b7babd8e06"
+  integrity sha512-wiphdLKqYR+8TliXqGTd6zaFYoIqdxP32QnhLgZvDZnAZns2b7QLZva1H2IWj7TjmfCBAbQiYd8/Ku7Eqhx3CA==
+  dependencies:
+    "@aws-lambda-powertools/commons" "^0.2.0"
+    "@types/aws-lambda" "^8.10.72"
+    lodash.clonedeep "^4.5.0"
+    lodash.merge "^4.6.2"
+    lodash.pickby "^4.6.0"
+
 "@aws-sdk/abort-controller@3.32.0":
   version "3.32.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/abort-controller/-/abort-controller-3.32.0.tgz#92be8d442141432ee83eb522170047fd8ea77bee"
@@ -3077,6 +3095,13 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
+"@middy/core@^1.0.0":
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/@middy/core/-/core-1.5.2.tgz#41e09c541ad13fd7acc48a63a72a211206ce2f2b"
+  integrity sha512-ja9hE3BheH9brkpFvNZ8bEQjopTT6ldGSbCPSGZk3UVgC9i9SdhoPOoFetrl3sOBO/sG6L8kKPxxUWeo1aO9Ug==
+  dependencies:
+    once "^1.4.0"
+
 "@napi-rs/triples@^1.0.3":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@napi-rs/triples/-/triples-1.1.0.tgz#88c35b72e79a20b79bb4c9b3e2817241a1c9f4f9"
@@ -3478,6 +3503,11 @@
   integrity sha512-jOdnI/3qTpHABjM5cx1Hc0sKsPoYCp+DP/GJRGtDlPd7fiV9oXGGIcjW/ZOxLIvjGz8MA+uMZI9metHlgqbgwQ==
   dependencies:
     "@types/node" "*"
+
+"@types/aws-lambda@^8.10.72":
+  version "8.10.92"
+  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.92.tgz#645f769ff88b8eba1acd35542695ac322c7757c4"
+  integrity sha512-dB14TltT1SNq73z3MaZfKyyBZ37NAgAFl8jze59bisR4fJ6pB6AYGxItHFkooZbN7UcVJX/cFudM4p8wp1W4rA==
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.14", "@types/babel__core@^7.1.7":
   version "7.1.18"
@@ -9502,6 +9532,11 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha1-4j8/nE+Pvd6HJSnBBxhXoIblzO8=
+
 lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
@@ -9566,6 +9601,11 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
   integrity sha1-DdOXEhPHxW34gJd9UEyI+0cal6w=
+
+lodash.pickby@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/lodash.pickby/-/lodash.pickby-4.6.0.tgz#7dea21d8c18d7703a27c704c15d3b84a67e33aff"
+  integrity sha1-feoh2MGNdwOifHBMFdO4SmfjOv8=
 
 lodash.sortby@^4.7.0:
   version "4.7.0"

@@ -1,15 +1,16 @@
+import middlewares from './middlewares'
 import { setWebhook, sendMessage } from './services'
 import { debug } from './core'
 import { getCommandAndText } from './utils'
 import { commands } from './commands'
 import { Event, Payload } from './types/payload'
 
-export const setHooks = async () => {
+export const setHooks =  middlewares.base(async () => {
   const response = await setWebhook(`${process.env.API_GATEWAY_URL}/telegram`)
   return response
-}
+})
 
-export const hooks = async (event: Event): Promise<void | Payload> => {
+export const hooks =  middlewares.base(async (event: Event): Promise<void | Payload> => {
   const payload: Payload = event.body && JSON.parse(event.body)
 
   const isCommand = payload.message.text.startsWith('/')
@@ -28,4 +29,4 @@ export const hooks = async (event: Event): Promise<void | Payload> => {
     const text = 'Sorry, I don\'t know this command. Try running `/help` to see the commands I know.'
     return await sendMessage(text, payload.message.chat.id)
   }
-}
+})
