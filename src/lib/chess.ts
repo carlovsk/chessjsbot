@@ -25,7 +25,23 @@
  *
  *----------------------------------------------------------------------------*/
 
-const Chess = function (fen) {
+import { ChessInstance } from '../types/chess'
+
+export const Chess: {
+  /**
+   * The Chess() constructor takes an optional parameter which specifies
+   * the board configuration in Forsyth-Edwards Notation.
+   * @param fen specifies the board configuration in Forsyth-Edwards Notation.
+   */
+  (fen?: string): ChessInstance;
+
+  /**
+   * The Chess() constructor takes an optional parameter which specifies
+   * the board configuration in Forsyth-Edwards Notation.
+   * @param fen specifies the board configuration in Forsyth-Edwards Notation.
+   */
+  new(fen?: string): ChessInstance;
+} = (fen?: string) => {
   const BLACK = 'b'
   const WHITE = 'w'
 
@@ -1904,5 +1920,3 @@ const Chess = function (fen) {
     }
   }
 }
-
-export { Chess }

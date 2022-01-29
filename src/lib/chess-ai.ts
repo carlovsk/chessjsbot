@@ -2,12 +2,12 @@
  * ---------------------------------------------------------------------------------------------------
  * The functions below have been gotten from: https://github.com/zeyu2001/chess-ai/blob/main/js/main.js
  * However, I've adapted:
- * -> Type definitions to work with typescript (and my linters);
- * -> I just need those algorithms for the AI, so I've removed the rest.
+ * -> Type definitions to work with typescript (and my linters)
+ * -> I just need those algorithms for the AI, so I've removed the rest
  * ---------------------------------------------------------------------------------------------------
  */
-import { ChessInstance } from 'chess.js'
-import { debug } from './core'
+import { ChessInstance, Move } from '../types/chess'
+import { debug } from '../core'
 
 /*
  * A simple chess AI, by someone who doesn't know how to play chess.
@@ -134,7 +134,7 @@ function getBestMove(game: ChessInstance, color: string, currSum: number) {
   return [bestMove, bestMoveValue];
 }
 
-function evaluateBoard(game, move, prevSum, color) {
+function evaluateBoard(game: ChessInstance, move: Move, prevSum: number, color: 'w' | 'b') {
   const weights = { p: 100, n: 280, b: 320, r: 479, q: 929, k: 60000, k_e: 60000 };
   const pstOpponent = { w: pst_b, b: pst_w };
   const pstSelf = { w: pst_w, b: pst_b };
