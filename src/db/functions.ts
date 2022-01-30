@@ -16,8 +16,8 @@ export const startGame = async ({ whitePlayer, blackPlayer, fen }: {
   await PutItem({ ...buildKeys.game({ playerId: blackPlayer.id, gameId }), gameId, board: fen })
 
   // store players
-  await PutItem({ ...buildKeys.player(whitePlayer.id, gameId), gameId, player: whitePlayer.name, playingAs: 'white' })
-  await PutItem({ ...buildKeys.player(blackPlayer.id, gameId), gameId, player: blackPlayer.name, playingAs: 'black' })
+  await PutItem({ ...buildKeys.player(whitePlayer.id, gameId), gameId, id: whitePlayer.id, player: whitePlayer.name, color: 'white', playingAs: 'white' })
+  await PutItem({ ...buildKeys.player(blackPlayer.id, gameId), gameId, id: blackPlayer.id, player: blackPlayer.name, color: 'black', playingAs: 'black' })
 }
 
 export const storeMove = async ({ gameId, playerId, move, moveIdx, board }: {
