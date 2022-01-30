@@ -1,3 +1,17 @@
+export const entities = {
+  user: 'user',
+  game: 'game',
+  move: 'move',
+  player: 'player'
+}
+
+export const colors = {
+  w: 'white',
+  b: 'black',
+  white: 'white',
+  black: 'black'
+}
+
 export const gameStatus = {
   running: 'running',
   finished: 'finished'
