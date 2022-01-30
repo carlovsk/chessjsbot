@@ -14,14 +14,18 @@ export default async (payload: Payload): Promise<void> => {
   if (isGameRunning) return sendMessage('You already have a game running.', id)
 
   await sendMessage(`Great! Starting the game...`, id)
-  await sendMessage(`**${player}** (white) vs. **Bot** (black)`, id)
+
+  const whitePlayer = { name: player, id: id }
+  const blackPlayer = { name: 'ChessJs Bot', id: 'bot' }
+
+  await sendMessage(`**${whitePlayer.name}** (white) vs. **${blackPlayer.name}** (black)`, id)
 
   const game = Chess()
 
   await startGame({
     fen: game.fen(),
-    whitePlayer: { name: player, id: id },
-    blackPlayer: { name: 'bot', id: 'bot' }
+    whitePlayer,
+    blackPlayer
   })
 
   await sendMessage(buildBoardMessage(game.ascii()), id)
