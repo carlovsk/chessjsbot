@@ -12,10 +12,13 @@ export const setHooks =  middlewares.base(async () => {
 
 export const hooks =  middlewares.base(async (event: Event): Promise<void | Payload> => {
   const payload: Payload = event.body && JSON.parse(event.body)
+  debug('lambdas:hooks')('payload %o', payload)
+
+  if (!payload.message) return
 
   const isCommand = payload.message.text.startsWith('/')
     && payload.message?.entities[0]?.type === 'bot_command'
-  debug('lambdas:hooks')('payload %o isCommand %o', payload, isCommand)
+  debug('lambdas:hooks')('isCommand %o', isCommand)
 
   // Checking if request is an slash command
   if (!isCommand) return
